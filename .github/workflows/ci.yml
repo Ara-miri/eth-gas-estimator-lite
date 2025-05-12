@@ -28,8 +28,7 @@ jobs:
   publish-to-npm:
     needs: build-and-test
     runs-on: ubuntu-latest
-    # only run this job when you push a git tag (e.g. v1.0.0)
-    if: startsWith(github.ref, 'refs/tags/')
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
