@@ -1,0 +1,59 @@
+name: CI & Publish
+
+# 1. Trigger on pushes to main and new Releases
+on:
+  push:
+    branches: [main]
+  release:
+    types: [created]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint # optional—remove if you don’t have a lint script
+
+      - name: Run tests
+        run: npm test
+
+  publish-to-npm:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    # only run this job when you push a git tag (e.g. v1.0.0)
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 18 and set registry
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: https://registry.npmjs.org/
+
+      - name: Authenticate to npm
+        # this writes your NPM_TOKEN secret into .npmrc so that `npm publish` can auth
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Install & Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Publish package
+        run: npm publish --access public
