@@ -25,9 +25,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Lint
-        run: npm run lint # optional—remove if you don’t have a lint script
-
       - name: Run tests
         run: npm test
 
